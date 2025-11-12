@@ -1,5 +1,4 @@
 
-# Assignment 4 — Database Migrations with Flyway, Ansible & CI/CD
 
 # Assignment 4 – Database Migrations with Flyway, Ansible & CI/CD
 
