@@ -48,6 +48,7 @@ jobs:
             -locations=filesystem:/flyway/migrations_initial \
             migrate
 
+
       - name: Run Python Tests
         run: |
           pip install mysql-connector-python pytest
