@@ -40,13 +40,15 @@ jobs:
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/flyway:/flyway \
-            flyway/flyway:10 \
-            -url=jdbc:mysql://127.0.0.1:3306/subscriptions \
-            -user=root -password=rootpass \
-            -mysql.allowPublicKeyRetrieval=true \
-            -connectRetries=10 \
-            -locations=filesystem:/flyway/migrations_initial \
-            migrate
+            flyway/flyway:10 bash -c "\
+              /flyway/flyway \
+              -url=jdbc:mysql://127.0.0.1:3306/subscriptions \
+              -user=root -password=rootpass \
+              -mysql.allowPublicKeyRetrieval=true \
+              -connectRetries=10 \
+              -locations=filesystem:/flyway/migrations_initial \
+              migrate"
+
 
 
 
