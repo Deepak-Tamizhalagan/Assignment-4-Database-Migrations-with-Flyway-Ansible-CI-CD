@@ -39,14 +39,16 @@ jobs:
       - name: Run Flyway migrations
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}/flyway:/flyway \
+            -v ${{ github.workspace }}/flyway:/flyway/sql \
             flyway/flyway:10 \
+            /flyway/flyway \
             -url=jdbc:mysql://127.0.0.1:3306/subscriptions \
             -user=root -password=rootpass \
             -mysql.allowPublicKeyRetrieval=true \
             -connectRetries=10 \
-            -locations=filesystem:/flyway/migrations_initial \
+            -locations=filesystem:/flyway/sql/migrations_initial \
             migrate
+
 
 
       - name: Run Python Tests
