@@ -1,37 +1,45 @@
+import mysql.connector
+import pytest
 
-import os, pymysql, uuid
+DB_CONFIG = {
+    "host": "127.0.0.1",
+    "user": "sub_user",
+    "password": "sub_pass",
+    "database": "subscriptions"
+}
 
-DB_HOST = os.getenv("DB_HOST","127.0.0.1")
-DB_USER = os.getenv("DB_USER","root")
-DB_PWD  = os.getenv("DB_PASSWORD","rootpass")
-DB_NAME = os.getenv("DB_NAME","subscriptions")
+@pytest.fixture(scope="module")
+def connection():
+    conn = mysql.connector.connect(**DB_CONFIG)
+    yield conn
+    conn.close()
 
-def connect():
-    return pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PWD, database=DB_NAME, cursorclass=pymysql.cursors.DictCursor, autocommit=True)
+def test_create_subscriber(connection):
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO subscribers (email, name) VALUES ('test@example.com', 'Deepak');")
+    connection.commit()
+    cursor.execute("SELECT COUNT(*) FROM subscribers WHERE email='test@example.com';")
+    count = cursor.fetchone()[0]
+    assert count == 1
 
-def test_create_read_update_delete():
-    email = f"{uuid.uuid4()}@example.com"
-    name = "Alice"
-    # CREATE
-    with connect() as conn, conn.cursor() as cur:
-        cur.execute("INSERT INTO subscribers(email, name) VALUES(%s,%s)", (email, name))
-        sub_id = cur.lastrowid
-        assert sub_id
+def test_read_subscriber(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT name FROM subscribers WHERE email='test@example.com';")
+    result = cursor.fetchone()
+    assert result is not None and result[0] == 'Deepak'
 
-    # READ
-    with connect() as conn, conn.cursor() as cur:
-        cur.execute("SELECT * FROM subscribers WHERE id=%s", (sub_id,))
-        row = cur.fetchone()
-        assert row and row["email"] == email
+def test_update_subscriber(connection):
+    cursor = connection.cursor()
+    cursor.execute("UPDATE subscribers SET name='Updated' WHERE email='test@example.com';")
+    connection.commit()
+    cursor.execute("SELECT name FROM subscribers WHERE email='test@example.com';")
+    result = cursor.fetchone()
+    assert result[0] == 'Updated'
 
-    # UPDATE
-    with connect() as conn, conn.cursor() as cur:
-        cur.execute("UPDATE subscribers SET name=%s WHERE id=%s", ("Alice Updated", sub_id))
-        cur.execute("SELECT name FROM subscribers WHERE id=%s", (sub_id,))
-        assert cur.fetchone()["name"] == "Alice Updated"
-
-    # DELETE
-    with connect() as conn, conn.cursor() as cur:
-        cur.execute("DELETE FROM subscribers WHERE id=%s", (sub_id,))
-        cur.execute("SELECT COUNT(*) AS n FROM subscribers WHERE id=%s", (sub_id,))
-        assert cur.fetchone()["n"] == 0
+def test_delete_subscriber(connection):
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM subscribers WHERE email='test@example.com';")
+    connection.commit()
+    cursor.execute("SELECT COUNT(*) FROM subscribers WHERE email='test@example.com';")
+    count = cursor.fetchone()[0]
+    assert count == 0
