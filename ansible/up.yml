@@ -51,12 +51,13 @@
         docker run --rm \
           -v {{ playbook_dir }}/../flyway:/flyway \
           flyway/flyway:10 \
-          -url=jdbc:mysql://127.0.0.1:3306/{{ db_name }} \
+          -url=jdbc:mysql://{{ mysql_host }}:{{ mysql_port }}/{{ db_name }} \
           -user={{ db_user }} -password={{ db_pass }} \
           -mysql.allowPublicKeyRetrieval=true \
           -connectRetries=10 \
           -locations=filesystem:/flyway/migrations_initial migrate
       args:
         chdir: "{{ playbook_dir }}/.."
+
 
 
